@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>showcogaku</title>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap');
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent
+    }
+
+    :root {
+        --bg: #fff8f9;
+        --surface: #fff0f3;
+        --surface2: #ffe4ec;
+        --border: #f9c0ce;
+        --text: #3d1a24;
+        --muted: #b07080;
+        --accent: #e05a7a;
+        --accent2: #f7a8bb;
+        --green: #2d8a5e;
+        --green-bg: #edf7f2;
+        --green-b: #a8ddc4;
+        --red: #c44060;
+        --red-bg: #fdedf2;
+        --red-b: #f4b8cc;
+        --blue: #2a6baa;
+        --blue-bg: #eaf3fb;
+        --blue-b: #a8cef0;
+        --amber: #c46a00;
+        --amber-bg: #fff3e0;
+        --amber-b: #ffc97a;
+    }
+
+    html, body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Noto Sans JP', sans-serif;
+        overflow: hidden
+    }
+
+    #lock {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(160deg, #fff0f5 0%, #fce4ec 100%);
+        z-index: 100;
+        transition: opacity .5s ease, transform .5s ease
+    }
+
+    #lock.out {
+        opacity: 0;
+        transform: scale(1.04);
+        pointer-events: none
+    }
+
+    .lock-deco {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f9a8c0, #f06292);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 24px rgba(240, 98, 146, 0.3)
+    }
+
+    .lock-deco-inner {
+        width: 28px;
+        height: 28px;
+        border: 3px solid #fff;
+        border-radius: 50%;
+        position: relative
+    }
+
+    .lock-deco-inner::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 18px;
+        height: 14px;
+        border: 3px solid #fff;
+        border-radius: 3px
+    }
+
+    .lock-title {
+        font-size: 20px;
+        font-weight: 500;
+        color: #c2476b;
+        letter-spacing: .08em;
+        margin-bottom: 6px
+    }
+
+    .lock-sub {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: .2em;
+        margin-bottom: 28px;
+        font-family: 'DM Mono', monospace
+    }
+
+    .pw-wrap {
+        position: relative;
+        width: 240px
+    }
+
+    .pw-wrap input {
+        width: 100%;
+        background: #fff;
+        border: 1.5px solid var(--accent2);
+        border-radius: 50px;
+        padding: 13px 52px 13px 20px;
+        color: var(--text);
+        font-size: 14px;
+        outline: none;
+        font-family: 'Noto Sans JP', sans-serif;
+        letter-spacing: .1em;
+        transition: border-color .2s;
+        box-shadow: 0 2px 12px rgba(224, 90, 122, 0.1)
+    }
+
+    .pw-wrap input::placeholder {
+        color: #dba0b0
+    }
+
+    .pw-wrap input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 2px 16px rgba(224, 90, 122, 0.18)
+    }
+
+    .pw-wrap input.err {
+        border-color: #e53e3e;
+        animation: shake .3s ease
+    }
+
+    .pw-wrap .arrow {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(135deg, #f06292, #e05a7a);
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity .15s, transform .1s;
+        box-shadow: 0 2px 8px rgba(224, 90, 122, 0.3)
+    }
+
+    .pw-wrap .arrow:hover {
+        opacity: .9
+    }
+
+    .pw-wrap .arrow:active {
+        transform: translateY(-50%) scale(.93)
+    }
+
+    .pw-wrap .arrow svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round
+    }
+
+    .err-msg {
+        color: #e53e3e;
+        font-size: 12px;
+        margin-top: 8px;
+        text-align: center;
+        height: 16px;
+        font-family: 'DM Mono', monospace
+    }
+
+    @keyframes shake {
+        0%, 100% {
+            transform:translateX(0)
+        }
+
+        25% {
+            transform:translateX(-6px)
+        }
+
+        75% {
+            transform: translateX(6px)
+        }
+    }
+
+    #app {
+        display: none;
+        height: 100%;
+        flex-direction: column;
+        max-width: 430px;
+        margin: 0 auto
+    }
+
+    #app.show {
+        display: flex
+    }
+
+    .hdr {
+        padding: 52px 24px 12px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px
+    }
+
+    .hdr-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f06292, #e05a7a)
+    }
+
+    .hdr-title {
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: .18em;
+        font-family: 'DM Mono', monospace
+    }
+
+    .scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 20px 40px;
+        -webkit-overflow-scrolling: touch
+    }
+
+    .scroll::-webkit-scrollbar {
+        display: none
+    }
+
+    .date-card {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: 24px;
+        padding: 22px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(224, 90, 122, 0.06)
+    }
+
+    .card-label {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: .18em;
+        margin-bottom: 12px;
+        font-family: 'DM Mono', monospace
+    }
+
+    .date-input {
+        width: 100%;
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: 14px;
+        padding: 13px 16px;
+        color: var(--text);
+        font-size: 15px;
+        outline: none;
+        font-family: 'Noto Sans JP', sans-serif;
+        -webkit-appearance: none;
+        transition: border-color .2s
+    }
+
+    .date-input:focus {
+        border-color: var(--accent)
+    }
+
+    .date-input::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        opacity: .5
+    }
+
+    .calc-btn {
+        width: 100%;
+        margin-top: 12px;
+        padding: 15px;
+        background: linear-gradient(135deg, #f06292, #e05a7a);
+        border: none;
+        border-radius: 50px;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: 'Noto Sans JP', sans-serif;
+        letter-spacing: .08em;
+        transition: opacity .15s, transform .1s;
+        box-shadow: 0 4px 16px rgba(224, 90, 122, 0.3)
+    }
+
+    .calc-btn:active {
+        opacity: .88;
+        transform: scale(.98)
+    }
+
+    .result {
+        display: none;
+        margin-bottom: 16px
+    }
+
+    .result.show {
+        display: block
+    }
+
+    .result-date {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: .15em;
+        margin-bottom: 12px;
+        font-family: 'DM Mono', monospace;
+        padding-left: 4px
+    }
+
+    .badges {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px
+    }
+
+    .badge {
+        border-radius: 20px;
+        padding: 18px 16px;
+        border: 1.5px solid transparent
+    }
+
+    .badge.green {
+        background: var(--green-bg);
+        border-color: var(--green-b)
+    }
+
+    .badge.red {
+        background: var(--red-bg);
+        border-color: var(--red-b)
+    }
+
+    .badge.blue {
+        background: var(--blue-bg);
+        border-color: var(--blue-b)
+    }
+
+    .badge-side {
+        font-size: 10px;
+        letter-spacing: .2em;
+        color: var(--muted);
+        margin-bottom: 6px;
+        font-family: 'DM Mono', monospace
+    }
+
+    .badge-val {
+        font-size: 17px;
+        font-weight: 500;
+        line-height: 1.3
+    }
+
+    .badge.green .badge-val {
+        color: var(--green)
+    }
+
+    .badge.red .badge-val {
+        color: var(--red)
+    }
+
+    .badge.blue .badge-val {
+        color: var(--blue)
+    }
+
+    .setsu-card {
+        background: #fff;
+        border: 1.5px solid var(--amber-b);
+        border-radius: 24px;
+        padding: 18px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 20px rgba(196, 106, 0, 0.06)
+    }
+
+    .setsu-label {
+        font-size: 11px;
+        color: var(--amber);
+        letter-spacing: .15em;
+        margin-bottom: 14px;
+        font-family: 'DM Mono', monospace;
+        display: flex;
+        align-items: center;
+        gap: 6px
+    }
+
+    .setsu-label::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--amber);
+        flex-shrink: 0
+    }
+
+    .setsu-inner {
+        background: var(--surface);
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border: 1.5px solid var(--border)
+    }
+
+    .setsu-inner .badge-side {
+        font-size: 10px;
+        letter-spacing: .2em;
+        color: var(--muted);
+        margin-bottom: 4px;
+        font-family: 'DM Mono', monospace
+    }
+
+    .setsu-inner .badge-val {
+        font-size: 17px;
+        font-weight: 500
+    }
+
+    .setsu-inner .badge-val.green {
+        color: var(--green)
+    }
+
+    .setsu-inner .badge-val.red {
+        color: var(--red)
+    }
+
+    .setsu-inner .badge-val.blue {
+        color: var(--blue)
+    }
+
+    .setsu-outer-label {
+        font-size: 10px;
+        letter-spacing: .2em;
+        color: var(--muted);
+        margin-bottom: 8px;
+        font-family: 'DM Mono', monospace;
+        padding-left: 2px
+    }
+
+    .setsu-outer-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px
+    }
+
+    .setsu-badge {
+        border-radius: 16px;
+        padding: 14px;
+        border: 1.5px solid transparent
+    }
+
+    .setsu-badge.green {
+        background: var(--green-bg);
+        border-color: var(--green-b)
+    }
+
+    .setsu-badge.red {
+        background: var(--red-bg);
+        border-color: var(--red-b)
+    }
+
+    .setsu-badge.blue {
+        background: var(--blue-bg);
+        border-color: var(--blue-b)
+    }
+
+    .setsu-badge-sub {
+        font-size: 9px;
+        color: var(--muted);
+        letter-spacing: .1em;
+        margin-bottom: 4px;
+        font-family: 'DM Mono', monospace
+    }
+
+    .setsu-badge-val {
+        font-size: 15px;
+        font-weight: 500
+    }
+
+    .setsu-badge.green .setsu-badge-val {
+        color: var(--green)
+    }
+
+    .setsu-badge.red .setsu-badge-val {
+        color: var(--red)
+    }
+
+    .setsu-badge.blue .setsu-badge-val {
+        color: var(--blue)
+    }
+
+    .dbg {
+        font-size: 10px;
+        color: #e0c0c8;
+        text-align: center;
+        margin-top: 8px;
+        font-family: 'DM Mono', monospace
+    }
+
+    .spacer {
+        height: env(safe-area-inset-bottom, 32px)
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform:translateY(12px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    .result.show .badge {
+        animation: fadeUp .35s ease both
+    }
+
+    .result.show .badge:nth-child(2) {
+        animation-delay: .07s
+    }
+    </style>
+</head>
+<body>
+
+    <div id="lock">
+        <div class="lock-deco">
+            <div class="lock-deco-inner"></div>
+        </div>
+        <div class="lock-title">showcogaku</div>
+        <div class="lock-sub">KOSEIGAKU</div>
+        <div class="pw-wrap">
+            <input type="password" id="pw" placeholder="パスワードを入力" maxlength="20" autocomplete="off">
+            <button class="arrow" onclick="tryUnlock()">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </button>
+        </div>
+        <div class="err-msg" id="err"></div>
+    </div>
+
+    <div id="app">
+        <div class="hdr">
+            <div class="hdr-dot"></div>
+            <span class="hdr-title">showco学 / CALCULATOR</span>
+        </div>
+        <div class="scroll">
+            <div class="date-card">
+                <div class="card-label">生年月日を入力</div>
+                <input type="date" class="date-input" id="bd" value="1990-01-01" min="1924-01-01" max="2030-12-31">
+                <button class="calc-btn" onclick="calc()">計 算</button>
+            </div>
+            <div class="result" id="res-normal">
+                <div class="result-date" id="rd"></div>
+                <div class="badges">
+                    <div class="badge" id="ib">
+                        <div class="badge-side">INNER · 内面</div>
+                        <div class="badge-val" id="iv"></div>
+                    </div>
+                    <div class="badge" id="ob">
+                        <div class="badge-side">OUTER · 外面</div>
+                        <div class="badge-val" id="ov"></div>
+                    </div>
+                </div>
+                <div class="dbg" id="dbg"></div>
+            </div>
+            <div class="result" id="res-setsu">
+                <div class="result-date" id="rd2"></div>
+                <div class="setsu-card">
+                    <div class="setsu-label">節入日 — 外面が変わります</div>
+                    <div class="setsu-inner">
+                        <div class="badge-side">INNER · 内面</div>
+                        <div class="badge-val" id="si"></div>
+                    </div>
+                    <div class="setsu-outer-label">OUTER · 外面（節入前 / 節入後）</div>
+                    <div class="setsu-outer-grid">
+                        <div class="setsu-badge" id="sb1">
+                            <div class="setsu-badge-sub">節入前</div>
+                            <div class="setsu-badge-val" id="sv1"></div>
+                        </div>
+                        <div class="setsu-badge" id="sb2">
+                            <div class="setsu-badge-sub">節入後</div>
+                            <div class="setsu-badge-val" id="sv2"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dbg" id="dbg2"></div>
+            </div>
+            <div class="spacer"></div>
+        </div>
+    </div>
+
+    <script>
+    const PW = 'showco';
+    const INNER = [11, 2, 6, 4, 1, 7, 11, 2, 6, 4, 0, 8, 5, 3, 6, 4, 0, 8, 5, 3, 9, 9, 3, 5, 5, 3, 9, 9, 3, 5, 8, 0, 4, 6, 3, 5, 8, 0, 4, 6, 2, 11, 7, 1, 4, 6, 2, 11, 7, 1, 10, 10, 1, 7, 7, 1, 10, 10, 1, 7];
+    const OUTER = {
+        0: [11, 4, 5, 9, 5, 9, 8, 6, 7, 10],
+        1: [1, 2, 0, 3, 0, 3, 3, 0, 2, 1],
+        2: [10, 7, 6, 8, 6, 8, 9, 5, 4, 11],
+        3: [7, 10, 11, 4, 11, 4, 5, 9, 8, 6],
+        4: [2, 1, 1, 2, 1, 2, 0, 3, 3, 0],
+        5: [4, 11, 10, 7, 10, 7, 6, 8, 9, 5],
+        6: [8, 6, 7, 10, 7, 10, 11, 4, 5, 9],
+        7: [3, 0, 2, 1, 2, 1, 1, 2, 0, 3],
+        8: [9, 5, 4, 11, 4, 11, 10, 7, 6, 8],
+        9: [5, 9, 8, 6, 8, 6, 7, 10, 11, 4],
+        10: [0, 3, 3, 0, 3, 0, 2, 1, 1, 2],
+        11: [6, 8, 9, 5, 9, 5, 4, 11, 10, 7]
+    };
+    const TYPES = ["人(自然)", "人(先端)", "人(実績)", "人(配慮)", "城(夢想)", "城(独自)", "城(実益)", "城(悠然)", "大物(努力)", "大物(敏感)", "大物(完璧)", "大物(挑戦)"];
+    const COLOR = ["green", "green", "green", "green", "red", "red", "red", "red", "blue", "blue", "blue", "blue"];
+    const S = [[1924, 2, 5], [1924, 3, 6], [1924, 4, 5], [1924, 5, 6], [1924, 6, 6], [1924, 7, 7], [1924, 8, 8], [1924, 9, 8], [1924, 10, 8], [1924, 11, 7], [1924, 12, 7], [1925, 1, 6], [1925, 2, 4], [1925, 3, 6], [1925, 4, 5], [1925, 5, 6], [1925, 6, 6], [1925, 7, 7], [1925, 8, 8], [1925, 9, 8], [1925, 10, 8], [1925, 11, 7], [1925, 12, 7], [1926, 1, 6], [1926, 2, 4], [1926, 3, 6], [1926, 4, 5], [1926, 5, 6], [1926, 6, 6], [1926, 7, 7], [1926, 8, 8], [1926, 9, 8], [1926, 10, 8], [1926, 11, 7], [1926, 12, 7], [1927, 1, 6], [1927, 2, 4], [1927, 3, 6], [1927, 4, 5], [1927, 5, 6], [1927, 6, 6], [1927, 7, 7], [1927, 8, 7], [1927, 9, 8], [1927, 10, 8], [1927, 11, 7], [1927, 12, 7], [1928, 1, 6], [1928, 2, 5], [1928, 3, 5], [1928, 4, 5], [1928, 5, 5], [1928, 6, 6], [1928, 7, 7], [1928, 8, 7], [1928, 9, 7], [1928, 10, 8], [1928, 11, 7], [1928, 12, 7], [1929, 1, 5], [1929, 2, 4], [1929, 3, 6], [1929, 4, 5], [1929, 5, 6], [1929, 6, 6], [1929, 7, 7], [1929, 8, 8], [1929, 9, 8], [1929, 10, 8], [1929, 11, 7], [1929, 12, 7], [1930, 1, 6], [1930, 2, 4], [1930, 3, 6], [1930, 4, 5], [1930, 5, 6], [1930, 6, 6], [1930, 7, 7], [1930, 8, 8], [1930, 9, 8], [1930, 10, 8], [1930, 11, 7], [1930, 12, 7], [1931, 1, 6], [1931, 2, 4], [1931, 3, 6], [1931, 4, 5], [1931, 5, 6], [1931, 6, 6], [1931, 7, 7], [1931, 8, 8], [1931, 9, 8], [1931, 10, 8], [1931, 11, 7], [1931, 12, 7], [1932, 1, 6], [1932, 2, 5], [1932, 3, 5], [1932, 4, 5], [1932, 5, 5], [1932, 6, 6], [1932, 7, 7], [1932, 8, 7], [1932, 9, 7], [1932, 10, 8], [1932, 11, 7], [1932, 12, 7], [1933, 1, 5], [1933, 2, 4], [1933, 3, 6], [1933, 4, 5], [1933, 5, 6], [1933, 6, 6], [1933, 7, 7], [1933, 8, 8], [1933, 9, 8], [1933, 10, 8], [1933, 11, 7], [1933, 12, 7], [1934, 1, 6], [1934, 2, 4], [1934, 3, 6], [1934, 4, 5], [1934, 5, 6], [1934, 6, 6], [1934, 7, 7], [1934, 8, 8], [1934, 9, 8], [1934, 10, 8], [1934, 11, 7], [1934, 12, 7], [1935, 1, 6], [1935, 2, 4], [1935, 3, 6], [1935, 4, 5], [1935, 5, 6], [1935, 6, 6], [1935, 7, 7], [1935, 8, 8], [1935, 9, 8], [1935, 10, 8], [1935, 11, 7], [1935, 12, 7], [1936, 1, 6], [1936, 2, 5], [1936, 3, 5], [1936, 4, 5], [1936, 5, 5], [1936, 6, 5], [1936, 7, 7], [1936, 8, 7], [1936, 9, 7], [1936, 10, 8], [1936, 11, 7], [1936, 12, 7], [1937, 1, 5], [1937, 2, 4], [1937, 3, 6], [1937, 4, 5], [1937, 5, 6], [1937, 6, 6], [1937, 7, 7], [1937, 8, 8], [1937, 9, 8], [1937, 10, 8], [1937, 11, 7], [1937, 12, 7], [1938, 1, 6], [1938, 2, 4], [1938, 3, 6], [1938, 4, 5], [1938, 5, 6], [1938, 6, 6], [1938, 7, 7], [1938, 8, 8], [1938, 9, 8], [1938, 10, 8], [1938, 11, 7], [1938, 12, 7], [1939, 1, 6], [1939, 2, 4], [1939, 3, 6], [1939, 4, 5], [1939, 5, 6], [1939, 6, 6], [1939, 7, 7], [1939, 8, 8], [1939, 9, 8], [1939, 10, 8], [1939, 11, 7], [1939, 12, 7], [1940, 1, 6], [1940, 2, 5], [1940, 3, 5], [1940, 4, 5], [1940, 5, 5], [1940, 6, 6], [1940, 7, 7], [1940, 8, 7], [1940, 9, 7], [1940, 10, 8], [1940, 11, 7], [1940, 12, 7], [1941, 1, 5], [1941, 2, 4], [1941, 3, 6], [1941, 4, 5], [1941, 5, 6], [1941, 6, 6], [1941, 7, 7], [1941, 8, 8], [1941, 9, 8], [1941, 10, 8], [1941, 11, 7], [1941, 12, 7], [1942, 1, 6], [1942, 2, 4], [1942, 3, 6], [1942, 4, 5], [1942, 5, 6], [1942, 6, 6], [1942, 7, 7], [1942, 8, 8], [1942, 9, 8], [1942, 10, 8], [1942, 11, 7], [1942, 12, 7], [1943, 1, 6], [1943, 2, 4], [1943, 3, 6], [1943, 4, 5], [1943, 5, 6], [1943, 6, 6], [1943, 7, 7], [1943, 8, 8], [1943, 9, 8], [1943, 10, 8], [1943, 11, 7], [1943, 12, 7], [1944, 1, 6], [1944, 2, 5], [1944, 3, 5], [1944, 4, 5], [1944, 5, 5], [1944, 6, 6], [1944, 7, 7], [1944, 8, 7], [1944, 9, 7], [1944, 10, 8], [1944, 11, 7], [1944, 12, 7], [1945, 1, 5], [1945, 2, 4], [1945, 3, 6], [1945, 4, 6], [1945, 5, 6], [1945, 6, 6], [1945, 7, 7], [1945, 8, 8], [1945, 9, 8], [1945, 10, 8], [1945, 11, 7], [1945, 12, 7], [1946, 1, 6], [1946, 2, 4], [1946, 3, 6], [1946, 4, 5], [1946, 5, 6], [1946, 6, 6], [1946, 7, 7], [1946, 8, 8], [1946, 9, 8], [1946, 10, 8], [1946, 11, 7], [1946, 12, 7], [1947, 1, 6], [1947, 2, 4], [1947, 3, 6], [1947, 4, 5], [1947, 5, 6], [1947, 6, 6], [1947, 7, 7], [1947, 8, 8], [1947, 9, 8], [1947, 10, 8], [1947, 11, 7], [1947, 12, 7], [1948, 1, 6], [1948, 2, 5], [1948, 3, 5], [1948, 4, 5], [1948, 5, 5], [1948, 6, 6], [1948, 7, 7], [1948, 8, 7], [1948, 9, 7], [1948, 10, 7], [1948, 11, 7], [1948, 12, 7], [1949, 1, 5], [1949, 2, 4], [1949, 3, 6], [1949, 4, 5], [1949, 5, 6], [1949, 6, 6], [1949, 7, 7], [1949, 8, 8], [1949, 9, 8], [1949, 10, 8], [1949, 11, 7], [1949, 12, 7], [1950, 1, 6], [1950, 2, 4], [1950, 3, 6], [1950, 4, 5], [1950, 5, 6], [1950, 6, 6], [1950, 7, 7], [1950, 8, 8], [1950, 9, 8], [1950, 10, 8], [1950, 11, 7], [1950, 12, 7], [1951, 1, 6], [1951, 2, 4], [1951, 3, 6], [1951, 4, 5], [1951, 5, 6], [1951, 6, 6], [1951, 7, 7], [1951, 8, 8], [1951, 9, 8], [1951, 10, 8], [1951, 11, 7], [1951, 12, 7], [1952, 1, 6], [1952, 2, 5], [1952, 3, 5], [1952, 4, 5], [1952, 5, 5], [1952, 6, 6], [1952, 7, 7], [1952, 8, 7], [1952, 9, 7], [1952, 10, 7], [1952, 11, 7], [1952, 12, 7], [1953, 1, 5], [1953, 2, 4], [1953, 3, 6], [1953, 4, 5], [1953, 5, 6], [1953, 6, 6], [1953, 7, 7], [1953, 8, 8], [1953, 9, 8], [1953, 10, 8], [1953, 11, 7], [1953, 12, 7], [1954, 1, 6], [1954, 2, 4], [1954, 3, 6], [1954, 4, 5], [1954, 5, 6], [1954, 6, 6], [1954, 7, 7], [1954, 8, 8], [1954, 9, 8], [1954, 10, 8], [1954, 11, 7], [1954, 12, 7], [1955, 1, 6], [1955, 2, 4], [1955, 3, 6], [1955, 4, 5], [1955, 5, 6], [1955, 6, 6], [1955, 7, 7], [1955, 8, 8], [1955, 9, 8], [1955, 10, 8], [1955, 11, 7], [1955, 12, 8], [1956, 1, 6], [1956, 2, 5], [1956, 3, 5], [1956, 4, 5], [1956, 5, 5], [1956, 6, 6], [1956, 7, 7], [1956, 8, 7], [1956, 9, 7], [1956, 10, 8], [1956, 11, 7], [1956, 12, 7], [1957, 1, 5], [1957, 2, 4], [1957, 3, 6], [1957, 4, 5], [1957, 5, 6], [1957, 6, 6], [1957, 7, 7], [1957, 8, 8], [1957, 9, 8], [1957, 10, 8], [1957, 11, 7], [1957, 12, 7], [1958, 1, 6], [1958, 2, 4], [1958, 3, 6], [1958, 4, 5], [1958, 5, 6], [1958, 6, 6], [1958, 7, 7], [1958, 8, 8], [1958, 9, 8], [1958, 10, 8], [1958, 11, 7], [1958, 12, 7], [1959, 1, 6], [1959, 2, 4], [1959, 3, 6], [1959, 4, 5], [1959, 5, 6], [1959, 6, 6], [1959, 7, 7], [1959, 8, 8], [1959, 9, 8], [1959, 10, 8], [1959, 11, 7], [1959, 12, 7], [1960, 1, 6], [1960, 2, 5], [1960, 3, 5], [1960, 4, 5], [1960, 5, 5], [1960, 6, 6], [1960, 7, 7], [1960, 8, 7], [1960, 9, 7], [1960, 10, 8], [1960, 11, 7], [1960, 12, 7], [1961, 1, 5], [1961, 2, 4], [1961, 3, 6], [1961, 4, 5], [1961, 5, 6], [1961, 6, 6], [1961, 7, 7], [1961, 8, 8], [1961, 9, 8], [1961, 10, 8], [1961, 11, 7], [1961, 12, 7], [1962, 1, 6], [1962, 2, 4], [1962, 3, 6], [1962, 4, 5], [1962, 5, 6], [1962, 6, 6], [1962, 7, 7], [1962, 8, 8], [1962, 9, 8], [1962, 10, 8], [1962, 11, 7], [1962, 12, 7], [1963, 1, 6], [1963, 2, 4], [1963, 3, 6], [1963, 4, 5], [1963, 5, 6], [1963, 6, 6], [1963, 7, 7], [1963, 8, 8], [1963, 9, 8], [1963, 10, 8], [1963, 11, 7], [1963, 12, 7], [1964, 1, 6], [1964, 2, 5], [1964, 3, 5], [1964, 4, 5], [1964, 5, 5], [1964, 6, 6], [1964, 7, 7], [1964, 8, 7], [1964, 9, 7], [1964, 10, 8], [1964, 11, 7], [1964, 12, 7], [1965, 1, 5], [1965, 2, 4], [1965, 3, 6], [1965, 4, 5], [1965, 5, 6], [1965, 6, 6], [1965, 7, 7], [1965, 8, 8], [1965, 9, 8], [1965, 10, 8], [1965, 11, 7], [1965, 12, 7], [1966, 1, 6], [1966, 2, 4], [1966, 3, 6], [1966, 4, 5], [1966, 5, 6], [1966, 6, 6], [1966, 7, 7], [1966, 8, 8], [1966, 9, 8], [1966, 10, 8], [1966, 11, 7], [1966, 12, 7], [1967, 1, 6], [1967, 2, 4], [1967, 3, 6], [1967, 4, 5], [1967, 5, 6], [1967, 6, 6], [1967, 7, 7], [1967, 8, 8], [1967, 9, 8], [1967, 10, 8], [1967, 11, 7], [1967, 12, 7], [1968, 1, 6], [1968, 2, 5], [1968, 3, 5], [1968, 4, 5], [1968, 5, 5], [1968, 6, 5], [1968, 7, 7], [1968, 8, 7], [1968, 9, 7], [1968, 10, 8], [1968, 11, 7], [1968, 12, 7], [1969, 1, 5], [1969, 2, 4], [1969, 3, 6], [1969, 4, 5], [1969, 5, 6], [1969, 6, 6], [1969, 7, 7], [1969, 8, 8], [1969, 9, 8], [1969, 10, 8], [1969, 11, 7], [1969, 12, 7], [1970, 1, 6], [1970, 2, 4], [1970, 3, 6], [1970, 4, 5], [1970, 5, 6], [1970, 6, 6], [1970, 7, 7], [1970, 8, 8], [1970, 9, 8], [1970, 10, 8], [1970, 11, 7], [1970, 12, 7], [1971, 1, 6], [1971, 2, 4], [1971, 3, 6], [1971, 4, 5], [1971, 5, 6], [1971, 6, 6], [1971, 7, 7], [1971, 8, 8], [1971, 9, 8], [1971, 10, 8], [1971, 11, 7], [1971, 12, 7], [1972, 1, 6], [1972, 2, 5], [1972, 3, 5], [1972, 4, 5], [1972, 5, 5], [1972, 6, 6], [1972, 7, 7], [1972, 8, 7], [1972, 9, 7], [1972, 10, 8], [1972, 11, 7], [1972, 12, 7], [1973, 1, 5], [1973, 2, 4], [1973, 3, 6], [1973, 4, 5], [1973, 5, 6], [1973, 6, 6], [1973, 7, 7], [1973, 8, 8], [1973, 9, 8], [1973, 10, 8], [1973, 11, 7], [1973, 12, 7], [1974, 1, 6], [1974, 2, 4], [1974, 3, 6], [1974, 4, 5], [1974, 5, 6], [1974, 6, 6], [1974, 7, 7], [1974, 8, 8], [1974, 9, 8], [1974, 10, 8], [1974, 11, 7], [1974, 12, 7], [1975, 1, 6], [1975, 2, 4], [1975, 3, 6], [1975, 4, 5], [1975, 5, 6], [1975, 6, 6], [1975, 7, 7], [1975, 8, 8], [1975, 9, 8], [1975, 10, 8], [1975, 11, 7], [1975, 12, 8], [1976, 1, 6], [1976, 2, 5], [1976, 3, 5], [1976, 4, 5], [1976, 5, 5], [1976, 6, 5], [1976, 7, 7], [1976, 8, 7], [1976, 9, 7], [1976, 10, 8], [1976, 11, 7], [1976, 12, 7], [1977, 1, 5], [1977, 2, 4], [1977, 3, 6], [1977, 4, 5], [1977, 5, 6], [1977, 6, 6], [1977, 7, 7], [1977, 8, 8], [1977, 9, 8], [1977, 10, 8], [1977, 11, 7], [1977, 12, 7], [1978, 1, 6], [1978, 2, 4], [1978, 3, 6], [1978, 4, 5], [1978, 5, 6], [1978, 6, 6], [1978, 7, 7], [1978, 8, 8], [1978, 9, 8], [1978, 10, 8], [1978, 11, 7], [1978, 12, 7], [1979, 1, 6], [1979, 2, 4], [1979, 3, 6], [1979, 4, 5], [1979, 5, 6], [1979, 6, 6], [1979, 7, 7], [1979, 8, 8], [1979, 9, 8], [1979, 10, 8], [1979, 11, 7], [1979, 12, 7], [1980, 1, 6], [1980, 2, 5], [1980, 3, 5], [1980, 4, 5], [1980, 5, 5], [1980, 6, 6], [1980, 7, 7], [1980, 8, 7], [1980, 9, 7], [1980, 10, 8], [1980, 11, 7], [1980, 12, 7], [1981, 1, 5], [1981, 2, 4], [1981, 3, 6], [1981, 4, 5], [1981, 5, 6], [1981, 6, 6], [1981, 7, 7], [1981, 8, 8], [1981, 9, 8], [1981, 10, 8], [1981, 11, 7], [1981, 12, 7], [1982, 1, 6], [1982, 2, 4], [1982, 3, 6], [1982, 4, 5], [1982, 5, 6], [1982, 6, 6], [1982, 7, 7], [1982, 8, 8], [1982, 9, 8], [1982, 10, 8], [1982, 11, 7], [1982, 12, 7], [1983, 1, 6], [1983, 2, 4], [1983, 3, 6], [1983, 4, 5], [1983, 5, 6], [1983, 6, 6], [1983, 7, 7], [1983, 8, 8], [1983, 9, 8], [1983, 10, 8], [1983, 11, 7], [1983, 12, 7], [1984, 1, 6], [1984, 2, 5], [1984, 3, 5], [1984, 4, 5], [1984, 5, 5], [1984, 6, 5], [1984, 7, 7], [1984, 8, 7], [1984, 9, 7], [1984, 10, 8], [1984, 11, 7], [1984, 12, 7], [1985, 1, 5], [1985, 2, 4], [1985, 3, 6], [1985, 4, 5], [1985, 5, 6], [1985, 6, 6], [1985, 7, 7], [1985, 8, 8], [1985, 9, 8], [1985, 10, 8], [1985, 11, 7], [1985, 12, 7], [1986, 1, 6], [1986, 2, 4], [1986, 3, 6], [1986, 4, 5], [1986, 5, 6], [1986, 6, 6], [1986, 7, 7], [1986, 8, 8], [1986, 9, 8], [1986, 10, 8], [1986, 11, 7], [1986, 12, 7], [1987, 1, 6], [1987, 2, 4], [1987, 3, 6], [1987, 4, 5], [1987, 5, 6], [1987, 6, 6], [1987, 7, 7], [1987, 8, 8], [1987, 9, 8], [1987, 10, 8], [1987, 11, 7], [1987, 12, 7], [1988, 1, 6], [1988, 2, 5], [1988, 3, 5], [1988, 4, 5], [1988, 5, 5], [1988, 6, 5], [1988, 7, 7], [1988, 8, 7], [1988, 9, 7], [1988, 10, 8], [1988, 11, 7], [1988, 12, 7], [1989, 1, 5], [1989, 2, 4], [1989, 3, 6], [1989, 4, 5], [1989, 5, 6], [1989, 6, 6], [1989, 7, 7], [1989, 8, 8], [1989, 9, 8], [1989, 10, 8], [1989, 11, 7], [1989, 12, 7], [1990, 1, 6], [1990, 2, 4], [1990, 3, 6], [1990, 4, 5], [1990, 5, 6], [1990, 6, 6], [1990, 7, 7], [1990, 8, 8], [1990, 9, 8], [1990, 10, 8], [1990, 11, 7], [1990, 12, 7], [1991, 1, 6], [1991, 2, 4], [1991, 3, 6], [1991, 4, 5], [1991, 5, 6], [1991, 6, 6], [1991, 7, 7], [1991, 8, 8], [1991, 9, 8], [1991, 10, 8], [1991, 11, 7], [1991, 12, 7], [1992, 1, 6], [1992, 2, 5], [1992, 3, 5], [1992, 4, 5], [1992, 5, 5], [1992, 6, 5], [1992, 7, 7], [1992, 8, 7], [1992, 9, 7], [1992, 10, 8], [1992, 11, 7], [1992, 12, 7], [1993, 1, 5], [1993, 2, 4], [1993, 3, 5], [1993, 4, 5], [1993, 5, 5], [1993, 6, 5], [1993, 7, 7], [1993, 8, 7], [1993, 9, 8], [1993, 10, 8], [1993, 11, 7], [1993, 12, 7], [1994, 1, 5], [1994, 2, 4], [1994, 3, 6], [1994, 4, 5], [1994, 5, 6], [1994, 6, 6], [1994, 7, 7], [1994, 8, 8], [1994, 9, 8], [1994, 10, 8], [1994, 11, 7], [1994, 12, 7], [1995, 1, 6], [1995, 2, 4], [1995, 3, 6], [1995, 4, 5], [1995, 5, 6], [1995, 6, 6], [1995, 7, 7], [1995, 8, 8], [1995, 9, 8], [1995, 10, 8], [1995, 11, 7], [1995, 12, 7], [1996, 1, 6], [1996, 2, 5], [1996, 3, 5], [1996, 4, 5], [1996, 5, 5], [1996, 6, 5], [1996, 7, 7], [1996, 8, 7], [1996, 9, 7], [1996, 10, 8], [1996, 11, 7], [1996, 12, 7], [1997, 1, 5], [1997, 2, 4], [1997, 3, 6], [1997, 4, 5], [1997, 5, 6], [1997, 6, 6], [1997, 7, 7], [1997, 8, 8], [1997, 9, 8], [1997, 10, 8], [1997, 11, 7], [1997, 12, 7], [1998, 1, 6], [1998, 2, 4], [1998, 3, 6], [1998, 4, 5], [1998, 5, 6], [1998, 6, 6], [1998, 7, 7], [1998, 8, 8], [1998, 9, 8], [1998, 10, 8], [1998, 11, 7], [1998, 12, 7], [1999, 1, 6], [1999, 2, 4], [1999, 3, 6], [1999, 4, 5], [1999, 5, 6], [1999, 6, 6], [1999, 7, 7], [1999, 8, 8], [1999, 9, 8], [1999, 10, 8], [1999, 11, 7], [1999, 12, 7], [2000, 1, 6], [2000, 2, 5], [2000, 3, 5], [2000, 4, 5], [2000, 5, 5], [2000, 6, 5], [2000, 7, 7], [2000, 8, 7], [2000, 9, 7], [2000, 10, 8], [2000, 11, 7], [2000, 12, 7], [2001, 1, 5], [2001, 2, 4], [2001, 3, 6], [2001, 4, 5], [2001, 5, 6], [2001, 6, 6], [2001, 7, 7], [2001, 8, 8], [2001, 9, 8], [2001, 10, 8], [2001, 11, 7], [2001, 12, 7], [2002, 1, 6], [2002, 2, 4], [2002, 3, 6], [2002, 4, 5], [2002, 5, 6], [2002, 6, 6], [2002, 7, 7], [2002, 8, 8], [2002, 9, 8], [2002, 10, 8], [2002, 11, 7], [2002, 12, 7], [2003, 1, 6], [2003, 2, 4], [2003, 3, 6], [2003, 4, 5], [2003, 5, 6], [2003, 6, 6], [2003, 7, 7], [2003, 8, 8], [2003, 9, 8], [2003, 10, 8], [2003, 11, 7], [2003, 12, 7], [2004, 1, 6], [2004, 2, 5], [2004, 3, 5], [2004, 4, 5], [2004, 5, 5], [2004, 6, 5], [2004, 7, 7], [2004, 8, 7], [2004, 9, 7], [2004, 10, 8], [2004, 11, 7], [2004, 12, 7], [2005, 1, 5], [2005, 2, 4], [2005, 3, 6], [2005, 4, 5], [2005, 5, 6], [2005, 6, 6], [2005, 7, 7], [2005, 8, 8], [2005, 9, 8], [2005, 10, 8], [2005, 11, 7], [2005, 12, 7], [2006, 1, 6], [2006, 2, 4], [2006, 3, 6], [2006, 4, 5], [2006, 5, 6], [2006, 6, 6], [2006, 7, 7], [2006, 8, 8], [2006, 9, 8], [2006, 10, 8], [2006, 11, 7], [2006, 12, 7], [2007, 1, 6], [2007, 2, 4], [2007, 3, 6], [2007, 4, 5], [2007, 5, 6], [2007, 6, 6], [2007, 7, 7], [2007, 8, 8], [2007, 9, 8], [2007, 10, 8], [2007, 11, 7], [2007, 12, 7], [2008, 1, 6], [2008, 2, 5], [2008, 3, 5], [2008, 4, 5], [2008, 5, 5], [2008, 6, 5], [2008, 7, 7], [2008, 8, 7], [2008, 9, 7], [2008, 10, 8], [2008, 11, 7], [2008, 12, 7], [2009, 1, 5], [2009, 2, 4], [2009, 3, 6], [2009, 4, 5], [2009, 5, 6], [2009, 6, 6], [2009, 7, 7], [2009, 8, 8], [2009, 9, 8], [2009, 10, 8], [2009, 11, 7], [2009, 12, 7], [2010, 1, 6], [2010, 2, 4], [2010, 3, 6], [2010, 4, 5], [2010, 5, 6], [2010, 6, 6], [2010, 7, 7], [2010, 8, 8], [2010, 9, 8], [2010, 10, 8], [2010, 11, 7], [2010, 12, 7], [2011, 1, 6], [2011, 2, 4], [2011, 3, 6], [2011, 4, 5], [2011, 5, 6], [2011, 6, 6], [2011, 7, 7], [2011, 8, 8], [2011, 9, 8], [2011, 10, 8], [2011, 11, 7], [2011, 12, 8], [2012, 1, 6], [2012, 2, 5], [2012, 3, 5], [2012, 4, 5], [2012, 5, 5], [2012, 6, 5], [2012, 7, 7], [2012, 8, 7], [2012, 9, 7], [2012, 10, 8], [2012, 11, 7], [2012, 12, 7], [2013, 1, 5], [2013, 2, 4], [2013, 3, 6], [2013, 4, 5], [2013, 5, 6], [2013, 6, 6], [2013, 7, 7], [2013, 8, 8], [2013, 9, 8], [2013, 10, 8], [2013, 11, 7], [2013, 12, 7], [2014, 1, 6], [2014, 2, 4], [2014, 3, 6], [2014, 4, 5], [2014, 5, 6], [2014, 6, 6], [2014, 7, 7], [2014, 8, 8], [2014, 9, 8], [2014, 10, 8], [2014, 11, 7], [2014, 12, 7], [2015, 1, 6], [2015, 2, 4], [2015, 3, 6], [2015, 4, 6], [2015, 5, 6], [2015, 6, 6], [2015, 7, 7], [2015, 8, 8], [2015, 9, 8], [2015, 10, 8], [2015, 11, 8], [2015, 12, 7], [2016, 1, 6], [2016, 2, 5], [2016, 3, 5], [2016, 4, 5], [2016, 5, 5], [2016, 6, 5], [2016, 7, 7], [2016, 8, 7], [2016, 9, 7], [2016, 10, 8], [2016, 11, 7], [2016, 12, 7], [2017, 1, 5], [2017, 2, 4], [2017, 3, 6], [2017, 4, 5], [2017, 5, 6], [2017, 6, 6], [2017, 7, 7], [2017, 8, 8], [2017, 9, 8], [2017, 10, 8], [2017, 11, 7], [2017, 12, 7], [2018, 1, 6], [2018, 2, 4], [2018, 3, 6], [2018, 4, 5], [2018, 5, 6], [2018, 6, 6], [2018, 7, 7], [2018, 8, 8], [2018, 9, 8], [2018, 10, 8], [2018, 11, 7], [2018, 12, 7], [2019, 1, 6], [2019, 2, 4], [2019, 3, 6], [2019, 4, 5], [2019, 5, 6], [2019, 6, 6], [2019, 7, 7], [2019, 8, 8], [2019, 9, 8], [2019, 10, 8], [2019, 11, 8], [2019, 12, 7], [2020, 1, 6], [2020, 2, 4], [2020, 3, 5], [2020, 4, 4], [2020, 5, 5], [2020, 6, 5], [2020, 7, 7], [2020, 8, 7], [2020, 9, 7], [2020, 10, 8], [2020, 11, 7], [2020, 12, 7], [2021, 1, 5], [2021, 2, 3], [2021, 3, 5], [2021, 4, 5], [2021, 5, 5], [2021, 6, 5], [2021, 7, 7], [2021, 8, 7], [2021, 9, 7], [2021, 10, 8], [2021, 11, 7], [2021, 12, 7], [2022, 1, 5], [2022, 2, 4], [2022, 3, 6], [2022, 4, 5], [2022, 5, 6], [2022, 6, 6], [2022, 7, 7], [2022, 8, 8], [2022, 9, 8], [2022, 10, 8], [2022, 11, 7], [2022, 12, 7], [2023, 1, 6], [2023, 2, 4], [2023, 3, 6], [2023, 4, 5], [2023, 5, 6], [2023, 6, 6], [2023, 7, 7], [2023, 8, 8], [2023, 9, 8], [2023, 10, 8], [2023, 11, 7], [2023, 12, 7], [2024, 1, 6], [2024, 2, 5], [2024, 3, 5], [2024, 4, 5], [2024, 5, 5], [2024, 6, 5], [2024, 7, 6], [2024, 8, 7], [2024, 9, 7], [2024, 10, 8], [2024, 11, 7], [2024, 12, 7], [2025, 1, 5], [2025, 2, 3], [2025, 3, 5], [2025, 4, 5], [2025, 5, 5], [2025, 6, 5], [2025, 7, 7], [2025, 8, 7], [2025, 9, 7], [2025, 10, 8], [2025, 11, 7], [2025, 12, 7], [2026, 1, 5]];
+    let kii = -1;
+    for (let i = 0; i < S.length; i++) {
+        if (S[i][0] === 2019 && S[i][1] === 11 && S[i][2] === 8) {
+            kii = i;
+            break;
+        }
+    }
+    function daysDiff(y, m, d) {
+        return Math.floor((new Date(Date.UTC(y, m - 1, d)) - new Date(Date.UTC(1900, 0, 1))) / 86400000);
+    }
+    function getSetsuIdx(y, m, d) {
+        const tgt = new Date(Date.UTC(y, m - 1, d));
+        let last = 0;
+        for (let i = 0; i < S.length; i++) {
+            const sd = new Date(Date.UTC(S[i][0], S[i][1] - 1, S[i][2]));
+            if (sd <= tgt)
+                last = i;
+            else if (S[i][0] > y + 1)
+                break;
+        }
+        return last;
+    }
+    function isSetsuDay(y, m, d) {
+        for (let i = 0; i < S.length; i++) {
+            if (S[i][0] === y && S[i][1] === m && S[i][2] === d)
+                return i;
+            if (S[i][0] > y)
+                break;
+        }
+        return -1;
+    }
+    function getMkByIdx(idx) {
+        return idx - kii + 11;
+    }
+    function getOuter(mk, dk) {
+        return OUTER[((mk % 12) + 12) % 12][dk % 10];
+    }
+    document.getElementById('pw').addEventListener('keydown', e => {
+        if (e.key === 'Enter')
+            tryUnlock();
+    });
+    document.getElementById('pw').addEventListener('input', () => {
+        document.getElementById('pw').classList.remove('err');
+        document.getElementById('err').textContent = '';
+    });
+    function tryUnlock() {
+        if (document.getElementById('pw').value === PW) {
+            document.getElementById('lock').classList.add('out');
+            setTimeout(() => {
+                document.getElementById('lock').style.display = 'none';
+                document.getElementById('app').classList.add('show');
+            }, 500);
+        } else {
+            const el = document.getElementById('pw');
+            el.classList.add('err');
+            document.getElementById('err').textContent = 'パスワードが違います';
+            setTimeout(() => el.classList.remove('err'), 300);
+        }
+    }
+    function sb2(bid, vid, n) {
+        document.getElementById(bid).className = 'badge ' + COLOR[n];
+        document.getElementById(vid).textContent = TYPES[n];
+    }
+    function ssetsu(bid, vid, n) {
+        document.getElementById(bid).className = 'setsu-badge ' + COLOR[n];
+        document.getElementById(vid).textContent = TYPES[n];
+    }
+    function calc() {
+        const val = document.getElementById('bd').value;
+        if (!val)
+            return;
+        const [y, m, d] = val.split('-').map(Number);
+        const dk = ((daysDiff(y, m, d) + 10) % 60 + 60) % 60;
+        const si = isSetsuDay(y, m, d);
+        const ds = `${y}年${m}月${d}日`;
+        const rn = document.getElementById('res-normal');
+        const rs = document.getElementById('res-setsu');
+        rn.classList.remove('show');
+        rs.classList.remove('show');
+        if (si >= 0) {
+            const ob = getOuter(getMkByIdx(si - 1), dk),
+                oa = getOuter(getMkByIdx(si), dk),
+                iN = INNER[dk];
+            document.getElementById('rd2').textContent = ds;
+            const siEl = document.getElementById('si');
+            siEl.textContent = TYPES[iN];
+            siEl.className = 'badge-val ' + COLOR[iN];
+            ssetsu('sb1', 'sv1', ob);
+            ssetsu('sb2', 'sv2', oa);
+            void rs.offsetWidth;
+            rs.classList.add('show');
+        } else {
+            const mk = getMkByIdx(getSetsuIdx(y, m, d)),
+                iN = INNER[dk],
+                oN = getOuter(mk, dk);
+            document.getElementById('rd').textContent = ds;
+            sb2('ib', 'iv', iN);
+            sb2('ob', 'ov', oN);
+            void rn.offsetWidth;
+            rn.classList.add('show');
+        }
+    }
+    </script>
+</body>
+</html>
